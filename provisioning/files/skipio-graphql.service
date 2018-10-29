@@ -1,0 +1,9 @@
+[Unit]
+Description=Skipio Graphql Server
+[Service]
+Type=simple
+User=skipio
+WorkingDirectory=/home/skipio/skipio-graphql
+ExecStart=/bin/bash -lc "node -r dotenv/config src/index.js"
+[Install]
+WantedBy=multi-user.target

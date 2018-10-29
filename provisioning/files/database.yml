@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 10
+  username: skipio
+  reaping_frequency: 10
+  database: skipio_development
+  variables:
+    statement_timeout: 5000
+
+production:
+  <<: *default
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+  database: skipio_test

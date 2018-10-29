@@ -1,0 +1,51 @@
+---
+- name: Install Prereqs
+  become: true
+  become_user: root
+  apt:
+    name: [
+        libpq-dev,
+        python-psycopg2
+    ]
+    state: latest
+
+- name: Configure the PostgreSQL APT key
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+- name: Configure the PostgreSQL APT repositories
+  apt_repository: repo="deb http://apt.postgresql.org/pub/repos/apt/ {{distribution_release}}-pgdg main" state=present
+
+- name: Install postgres
+  apt: name=postgresql-{{ postgresql_version }} state=installed
+
+- name: create database
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: skipio
+    encoding: UTF-8
+
+- name: create database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    db: skipio
+    name: skipio
+    password: ''
+    role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"
+
+- name: create database
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: skipio_development
+    encoding: UTF-8
+
+- name: create database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    db: skipio_development
+    name: skipio
+    password: ''
+    role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"

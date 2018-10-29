@@ -1,0 +1,21 @@
+---
+# Postgresql provision defaults
+
+# Version
+postgresql_version: "10"
+distribution_release: "xenial"
+
+# User / Groups
+postgresql_admin_user: postgres
+postgresql_admin_group: postgres
+
+# Cluster
+postgresql_cluster: main
+
+# Config file locations
+postgresql_conf_dir: "/etc/postgresql/{{postgresql_version}}/{{postgresql_cluster}}"
+postgresql_hba_file: "{{postgresql_conf_directory}}/pg_hba.conf"
+
+
+# Install and setup server
+postgresql_install_server: True

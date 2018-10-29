@@ -1,0 +1,9 @@
+[Unit]
+Description=Skipio Web Server
+[Service]
+Type=simple
+User=skipio
+WorkingDirectory=/home/skipio/skipio
+ExecStart=/bin/bash -lc "bundle exec rails server -p 3000"
+[Install]
+WantedBy=multi-user.target
