@@ -187,6 +187,16 @@
       args:
         chdir: "/home/skipio/skipio"
 
+    - name: install set skipio env script
+      become: true
+      become_user: skipio
+      copy:
+        src: "files/set-skipio-env.sh"
+        dest: "/home/skipio/set-skipio-env.sh"
+        owner: skipio
+        group: skipio
+        mode: "0755"
+
     - name: install dot env file
       become: true
       become_user: skipio
@@ -197,6 +207,13 @@
         group: skipio
         mode: "0600"
 
+    - name: source dot env from shell init
+      become: true
+      become_user: skipio
+      lineinfile:
+        path: /home/skipio/.bash_profile
+        line: export $(cat .env | xargs)
+
     # Don't know where to get this file
     #- name: install symmetric encryption config
     #  copy:
@@ -205,13 +222,6 @@
     #    owner: skipio
     #    group: skipio
     #    mode: "0600"
-
-    - name: source dot env from shell init
-      become: true
-      become_user: skipio
-      lineinfile:
-        path: /home/skipio/.bash_profile
-        line: source /home/skipio/.env
 
     - name: install config files
       copy:

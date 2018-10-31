@@ -14,7 +14,7 @@ postgresql_cluster: main
 
 # Config file locations
 postgresql_conf_dir: "/etc/postgresql/{{postgresql_version}}/{{postgresql_cluster}}"
-postgresql_hba_file: "{{postgresql_conf_directory}}/pg_hba.conf"
+postgresql_hba_file: "{{postgresql_conf_dir}}/pg_hba.conf"
 
 
 # Install and setup server

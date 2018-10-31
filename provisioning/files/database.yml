@@ -2,7 +2,9 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: 10
+  host: localhost
   username: skipio
+  password: 'skipiodevon3'
   reaping_frequency: 10
   database: skipio_development
   variables:

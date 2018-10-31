@@ -48,12 +48,37 @@ Everything must run as the **skipio** user, so switch users:
 sudo su - skipio
 ```
 
+### 4 - Set env vars
+Get env variables from Heroku env:
+```
+cd /home/skipio/
+```
+
+```
+heroku config -s -a skipio-qa >> .env
+```
+
+Run the script to update env vars for development purposes:
+```
+bash /home/skipio/set-skipio-env.sh
+```
+
+```
+chmod 600 .env
+```
+
+From **/home/skipio/** run the env file:
+```
+export $(cat .env | xargs)
+```
+
+Next, go into the repo folder in order to setup the DB
 ```
 cd /home/skipio/skipio
 ```
 
 
-### Setup Database
+### 4 - Setup Database
 Run command to pull QA database from Heroku (You will need to input your Heroku login):
 ```
 rails db:drop
@@ -67,16 +92,13 @@ heroku pg:pull DATABASE_URL skipio_development -a skipio-qa
 rails db:migrate
 ```
 
-Re-add the skipio DB user for dev: 
-
-(must be the **skipio** user in the terminal)
-
+Re-add the skipio DB user for dev: (must be the **skipio** user in the terminal)
 ```
-bash -lc bundle exec rails runner "User.create(email: 'skipio@skipio.com', first_name: 'Skipio', last_name: 'User', password: 'skipio', password_confirmation: 'skipio', phone_mobile: '+18019108019', enabled_features: ::ALL_FEATURES, verified_at: Time.now, setup_completed_at: Time.now, setup_completed_at: Time.now, is_enabled: true, api_phone_number: '+18019108019', api_phone_provider: 'twilio', time_zone: 'Mountain Time (US & Canada)')"
+bash -lc rails runner "User.create(email: 'skipio@skipio.com', first_name: 'Skipio', last_name: 'User', password: 'skipio', password_confirmation: 'skipio', phone_mobile: '+18019108019', enabled_features: ::ALL_FEATURES, verified_at: Time.now, setup_completed_at: Time.now, setup_completed_at: Time.now, is_enabled: true, api_phone_number: '+18019108019', api_phone_provider: 'twilio', time_zone: 'Mountain Time (US & Canada)')"
 ```
 
 
-### Run the application
+### 5 - Run the application
 
 ```
 bundle exec rails server -p 3000 -b 192.168.30.30

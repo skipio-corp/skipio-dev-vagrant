@@ -18,6 +18,14 @@
 - name: Install postgres
   apt: name=postgresql-{{ postgresql_version }} state=installed
 
+- name: install hba config file
+  copy:
+    src: "{{ role_path }}/files/pg_hba.conf"
+    dest: "{{postgresql_conf_dir}}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: "0755"
+
 - name: create database
   become: true
   become_user: postgres
@@ -31,7 +39,7 @@
   postgresql_user:
     db: skipio
     name: skipio
-    password: ''
+    password: 'skipiodevon3'
     role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"
 
 - name: create database
@@ -47,5 +55,5 @@
   postgresql_user:
     db: skipio_development
     name: skipio
-    password: ''
+    password: 'skipiodevon3'
     role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"
