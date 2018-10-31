@@ -24,7 +24,7 @@ Vagrant.configure("2") do |conf|
     # accessing "localhost:8080" will access port 80 on the guest machine.
     # NOTE: This will enable public access to the opened port
     config.vm.network "forwarded_port", guest: 3030, host: 3000
-    config.vm.network "forwarded_port", guest: 5000, host: 5050
+    #onfig.vm.network "forwarded_port", guest: 5000, host: 5050
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -41,11 +41,9 @@ Vagrant.configure("2") do |conf|
     # Example for VirtualBox:
     #
     config.vm.provider "virtualbox" do |vb|
-      vb.cpus = 2
+      vb.cpus = 1
       vb.memory = "1024"
     end
-
-    config.vm.provision :shell, path: "bootstrap.sh"
 
     #
     # View the documentation for the provider you are using for more
@@ -57,6 +55,8 @@ Vagrant.configure("2") do |conf|
         "skipio" => {"ansible_python_interpreter" => "/usr/bin/python"}
       }
     end
+
+    config.vm.provision :shell, path: "bootstrap.sh", run:'always'
 
   end
 end
