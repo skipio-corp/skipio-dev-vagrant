@@ -1,0 +1,2 @@
+#!/bin/bash
+ngrok http -subdomain skipio-jcuevas.ngrok.io 3000

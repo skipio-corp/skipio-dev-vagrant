@@ -26,11 +26,11 @@ for e in "${!envvars[@]}"
 do
         search=$e
         replace=${envvars[$e]}
-        sed -i -r "s/${search}=(.*)/${search}=${replace}/g" /home/skipio/.env
+        sed -i -r "s/${search}=(.*)/${search}=${replace}/g" /home/vagrant/.env
 done
 
 for i in "${envvars_d[@]}"
 do
         search=${i}
-        sed -i "/${search}/d" /home/skipio/.env
+        sed -i "/${search}/d" /home/vagrant/.env
 done
