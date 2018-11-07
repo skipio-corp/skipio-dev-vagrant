@@ -38,20 +38,15 @@ NOTE: The auto provisioning does not include **skipio graphql**. It has been dis
 ### 3 - Setup: Manually finish provisioning
 Some provisioning steps have not yet been automated and require manual setup:
 
-Within the **skipio-dev-vagrant** dir, SSH into the new machine, switch users, and go to the shared skipio dir:
+Within the **skipio-dev-vagrant** dir, SSH into the new machine and go to the shared skipio dir:
 ```
 vagrant ssh
-```
-
-Everything must run as the **skipio** user, so switch users:
-```
-sudo su - skipio
 ```
 
 ### 4 - Set env vars
 Get env variables from Heroku env:
 ```
-cd /home/skipio/
+cd /home/vagrant/
 ```
 
 ```
@@ -60,21 +55,21 @@ heroku config -s -a skipio-qa >> .env
 
 Run the script to update env vars for development purposes:
 ```
-bash /home/skipio/set-skipio-env.sh
+bash /home/vagrant/set-skipio-env.sh
 ```
 
 ```
 chmod 600 .env
 ```
 
-From **/home/skipio/** run the env file:
+From **/home/vagrant/** run the env file:
 ```
 export $(cat .env | xargs)
 ```
 
 Next, go into the repo folder in order to setup the DB
 ```
-cd /home/skipio/skipio
+cd /home/vagrant/skipio
 ```
 
 
@@ -92,7 +87,7 @@ heroku pg:pull DATABASE_URL skipio_development -a skipio-qa
 rails db:migrate
 ```
 
-Re-add the skipio DB user for dev: (must be the **skipio** user in the terminal)
+Re-add the skipio DB user for dev:
 ```
 bash -lc rails runner "User.create(email: 'skipio@skipio.com', first_name: 'Skipio', last_name: 'User', password: 'skipio', password_confirmation: 'skipio', phone_mobile: '+18019108019', enabled_features: ::ALL_FEATURES, verified_at: Time.now, setup_completed_at: Time.now, setup_completed_at: Time.now, is_enabled: true, api_phone_number: '+18019108019', api_phone_provider: 'twilio', time_zone: 'Mountain Time (US & Canada)')"
 ```
@@ -109,11 +104,33 @@ Now go to a browser and load the app:
 192.168.30.30:3000
 ```
 
+### Update personal settings - ngrok - twilio
+Update the following variable in **/home/vagrant/.env** to your personal twilio settings:
+```
+TWILIO_INBOUND_MESSAGE_CALLBACK_URL='https://<YOUR_NGROK_URL>/webhooks/twilio/messaging'
+TWILIO_INBOUND_VOICE_CALLBACK_URL='https://<YOUR_NGROK_URL>/webhooks/twilio/voice'
+TWILIO_PHONE_NUMBER=<YOUR_TWILIO_NUMBER>
+TWILIO_STATUS_CALLBACK_URL='https://<YOUR_NGROK_URL>/webhooks/twilio/messaging'
+```
+
+
+### 6 - Run sidekiq and clock (optional)
+If you want to be able to run the job queue and scheduler, start up the processes in the background. Run from **/home/vagrant/skipio**:
+```
+bundle exec sidekiq -v -C config/sidekiq.yml &
+```
+
+```
+bundle exec clockwork config/clock.rb &
+```
+
+If you would like to suppress the output, then use **2>&1 &** instead of **&** at the end of the command.
+
 
 ## TROUBLESHOOTING
 
 ### Setup assets
-If, for some reason, an issue with assets occurs, webpack, yarn, and other rails assets may need to be rebuilt. Run the following to build and install required webpack files, and rebuild assets: (in /home/skipio/skipio/)
+If, for some reason, an issue with assets occurs, webpack, yarn, and other rails assets may need to be rebuilt. Run the following to build and install required webpack files, and rebuild assets: (in /home/vagrant/skipio/)
 
 ```
 bundle exec rails assets:clobber
@@ -129,6 +146,9 @@ rake assets:precompile
 
 ### Alternate website loading
 Binding the rails app to the private IP of the Vagrant VM negates the use of the **port_forwarding**. If you still want to utilize the forwarded ports, you will need to bind the app to **0.0.0.0** instead.
+
+### Rsync
+Currently sharing folders via Rsync, so if you remove or add files/folder you will need to re-sync using the **vagrant rsync** command on your local machine. May switch this back to a standard file share using mount
 
 ### TODO
 1) Add Twilio configuration

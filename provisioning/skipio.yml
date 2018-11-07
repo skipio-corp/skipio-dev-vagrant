@@ -6,6 +6,8 @@
 
   vars:
     skipio_branch: jon-skipiodev
+    ngrok_file: ngrok-stable-linux-amd64.zip
+    ngrok_token: 3r6YEZLuLXeirdUcNp2yd_2KnPAaRZSSz3bbSVcaVoM
 
   roles:
     - db
@@ -27,7 +29,8 @@
           libreadline-dev,
           zlib1g-dev,
           libxml2-dev,
-          libcurl3
+          libcurl3,
+          unzip
         ]
 
     - name: remove useless packages from the cache
@@ -38,77 +41,71 @@
       apt:
         autoremove: true
 
-    - name: add skipio user
-      user:
-        name: skipio
-        state: present
-        shell: /bin/bash
-
     # Ensure that the skipio dir has proper ownership
     - name: Set home dir ownership
       become: true
       become_user: root
       file:
-        path: /home/skipio/
-        owner: skipio
-        group: skipio
+        path: /home/vagrant/
+        owner: vagrant
+        group: vagrant
         mode: 0775
         recurse: yes
 
     # Ensure that the skipio dir has proper ownership - redundant change later
     - name: Set skipio dir ownership
-      shell: "sudo chown -R skipio:skipio /home/skipio/skipio/"
+      shell: "sudo chown -R vagrant:vagrant /home/vagrant/skipio/"
 
     - name: install rbenv
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: |
         git clone https://github.com/rbenv/rbenv.git ~/.rbenv && echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >> ~/.bash_profile && echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
       args:
-        chdir: /home/skipio
+        chdir: /home/vagrant
         creates: .rbenv
 
     - name: install ruby-build
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: "mkdir -p .rbenv/plugins && git clone https://github.com/rbenv/ruby-build.git .rbenv/plugins/ruby-build"
       args:
-        chdir: /home/skipio
+        chdir: /home/vagrant
         creates: .rbenv/plugins/ruby-build
 
     - name: update rbenv
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: "git pull"
       args:
-        chdir: /home/skipio/.rbenv
+        chdir: /home/vagrant/.rbenv
 
     - name: update ruby-build
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: "git pull"
       args:
-        chdir: /home/skipio/.rbenv/plugins/ruby-build
+        chdir: /home/vagrant/.rbenv/plugins/ruby-build
 
     - name: install ruby
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: "bash -lc 'rbenv install 2.4.2 && rbenv global 2.4.2'"
       args:
-        chdir: /home/skipio
-        creates: /home/skipio/.rbenv/versions/2.4.2
+        chdir: /home/vagrant
+        creates: /home/vagrant/.rbenv/versions/2.4.2
 
     - name: install gemrc file
       copy:
-        owner: skipio
-        group: skipio
-        dest: /home/skipio/.gemrc
+        owner: vagrant
+        group: vagrant
+        dest: /home/vagrant/.gemrc
         mode: "0600"
         content: "gem: --no-document"
 
     - name: install bundler
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: |
         bash -lc 'gem install bundler'
   
@@ -144,21 +141,21 @@
 
     - name: install ssh identity files
       copy:
-        owner: skipio
-        group: skipio
+        #owner: skipio
+        #group: skipio
         src: "{{ item }}"
-        dest: /home/skipio/.ssh/
+        dest: /home/vagrant/.ssh/
         mode: "0600"
       with_fileglob:
         - "~/.ssh/id*"
 
     - name: "install ssh known_hosts"
       lineinfile:
-        owner: skipio
-        group: skipio
+        #owner: skipio
+        #group: skipio
         create: true
         mode: "0600"
-        dest: "/home/skipio/.ssh/known_hosts"
+        dest: "/home/vagrant/.ssh/known_hosts"
         line: |
           github.com,192.30.252.123 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 
@@ -167,58 +164,75 @@
 #    - name: clone skipio repo
 #      become: true
 #      become_user: skipio
-#      shell: "git clone --depth 1 -b {{skipio_branch}} git@github.com:skipio-corp/skipio.git $home/skipio"
+#      shell: "git clone --depth 1 -b {{skipio_branch}} git@github.com:skipio-corp/skipio.git $home/vagrant"
 #      args:
-#        creates: "/home/skipio/skipio"
+#        creates: "/home/vagrant/skipio"
 
     # Heroku CLI
     - name: Install Heroku cli
       become: true
-      become_user: root
+      #become_user: root
       shell: "curl https://cli-assets.heroku.com/install.sh | sh"
       args:
-        chdir: "/home/skipio/skipio"
+        chdir: "/home/vagrant/skipio"
 
     # Ruby Gem install
     - name: install gems
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: "bash -lc 'bundle'"
       args:
-        chdir: "/home/skipio/skipio"
+        chdir: "/home/vagrant/skipio"
 
     - name: install set skipio env script
       become: true
-      become_user: skipio
+      become_user: vagrant
       copy:
         src: "files/set-skipio-env.sh"
-        dest: "/home/skipio/set-skipio-env.sh"
-        owner: skipio
-        group: skipio
+        dest: "/home/vagrant/set-skipio-env.sh"
+        owner: vagrant
+        group: vagrant
         mode: "0755"
 
     - name: install dot env file
       become: true
-      become_user: skipio
+      become_user: vagrant
       copy:
         src: "files/_env"
-        dest: "/home/skipio/.env"
-        owner: skipio
-        group: skipio
+        dest: "/home/vagrant/.env"
+        owner: vagrant
+        group: vagrant
         mode: "0600"
 
     - name: source dot env from shell init
       become: true
-      become_user: skipio
+      become_user: vagrant
       lineinfile:
-        path: /home/skipio/.bash_profile
+        path: /home/vagrant/.bash_profile
         line: export $(cat .env | xargs)
+
+    #- name: install ngrok bin
+    #  become: true
+    #  become_user: vagrant
+    #  copy:
+    #    src: "files/{{ngrok_file}}"
+    #    dest: "/home/vagrant/{{ngrok_file}}"
+    #    owner: vagrant
+    #    group: vagrant
+    #    mode: "0755"
+
+    #- name: Unzip ngrok
+    #  become: true
+    #  become_user: vagrant
+    #  shell: unzip {{ngrok_file}} && rm {{ngrok_file}} && ./ngrok authtoken {{ngrok_token}}
+    #  args:
+    #    chdir: /home/vagrant/
 
     # Don't know where to get this file
     #- name: install symmetric encryption config
     #  copy:
     #    src: "files/symmetric-encryption.yml"
-    #    dest: "/home/skipio/skipio/config/symmetric-encryption.yml"
+    #    dest: "/home/vagrant/skipio/config/symmetric-encryption.yml"
     #    owner: skipio
     #    group: skipio
     #    mode: "0600"
@@ -226,9 +240,9 @@
     - name: install config files
       copy:
         src: "files/{{item}}"
-        dest: "/home/skipio/skipio/config/{{item}}"
-        owner: skipio
-        group: skipio
+        dest: "/home/vagrant/skipio/config/{{item}}"
+        owner: vagrant
+        group: vagrant
         mode: "0600"
       with_items:
         - database.yml
@@ -237,34 +251,42 @@
 
     - name: setup db
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: bash -lc "RAILS_ENV=development DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:reset"
       args:
-        chdir: /home/skipio/skipio
+        chdir: /home/vagrant/skipio
 
     - name: create skipio user
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: |
         bash -lc RAILS_ENV=development bundle exec rails runner "User.where(email: 'skipio@skipio.com').first || User.create(email: 'skipio@skipio.com', first_name: 'Skipio', last_name: 'User', password: 'skipio', password_confirmation: 'skipio', phone_mobile: '+18019108019', enabled_features: ::ALL_FEATURES, verified_at: Time.now, setup_completed_at: Time.now, setup_completed_at: Time.now, is_enabled: true, api_phone_number: '+18019108019', api_phone_provider: 'twilio', time_zone: 'Mountain Time (US & Canada)')"
       args:
-        chdir: /home/skipio/skipio
+        chdir: /home/vagrant/skipio
 
     - name: install javascript modules
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: bash -lc "yarn install"
       args:
-        chdir: /home/skipio/skipio
+        chdir: /home/vagrant/skipio
 
-     # DISABLED for dev
+    # DISABLED for dev
     - name: build assets
       become: true
-      become_user: skipio
+      become_user: vagrant
       shell: |
         bash -lc "bundle exec rails assets:precompile"
       args:
-        chdir: /home/skipio/skipio
+        chdir: /home/vagrant/skipio
+
+    #- name: install ngrok
+      #copy:
+      #  src: files/skipio-web.service
+      #  dest: /etc/systemd/system/skipio-web.service
+      #  owner: root
+      #  group: root
+      #  mode: "0600"
 
      # DISABLED for dev
 #    - name: install skipio web service
@@ -282,21 +304,21 @@
     #- name: clone skipio graphql repo
     #  become: true
     #  become_user: skipio
-    #  shell: "git clone git@github.com:skipio-corp/skipio-graphql.git /home/skipio/skipio-graphql"
+    #  shell: "git clone git@github.com:skipio-corp/skipio-graphql.git /home/vagrant/skipio-graphql"
     #  args:
-    #    creates: "/home/skipio/skipio-graphql"
+    #    creates: "/home/vagrant/skipio-graphql"
 
     #- name: install graphql javascript modules
     #  become: true
     #  become_user: skipio
     #  shell: bash -lc "yarn install"
     #  args:
-    #    chdir: "/home/skipio/skipio-graphql"
+    #    chdir: "/home/vagrant/skipio-graphql"
 
     #- name: install graphql dot env file
     #  copy:
     #    src: files/_env_graphql
-    #    dest: /home/skipio/skipio-graphql/.env
+    #    dest: /home/vagrant/skipio-graphql/.env
     #    owner: skipio
     #    group: skipio
     #    mode: "0600"

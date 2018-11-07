@@ -3,7 +3,7 @@ default: &default
   encoding: unicode
   pool: 10
   host: localhost
-  username: skipio
+  username: vagrant
   password: 'skipiodevon3'
   reaping_frequency: 10
   database: skipio_development
