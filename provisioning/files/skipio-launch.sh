@@ -1,9 +1,8 @@
+#!/bin/bash
+# Helper script to startup all skipio related services
+#   Or run them separately outside of this script
 
-# Setup dependencies
-#sudo apt-get update
-
-# Set env
-source /home/vagrant/.nvm/nvm.sh
+#./bin/twilio_proxy #DISABLED
 
 systemctl start skipio-clockwork.service
 systemctl start skipio-sidekiq.service

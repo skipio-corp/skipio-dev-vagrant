@@ -1,9 +1,0 @@
-redis-cli flushall
-
-./bin/rails s
-bundle exec sidekiq -v -C config/sidekiq.yml
-bundle exec clockwork config/clock.rb
-
-uno 1v ./bin/webpack-dev-server
-#uno 3v bundle exec sidekiq -c 5 -v -q low -q sms_message
-uno 5v ./bin/twilio_proxy

@@ -1,3 +1,4 @@
 PG_USER='vagrant'
 PG_PASSWORD='skipiodevon3'
 PG_HOST='localhost'
+FIREBASE_MESSAGING_SERVER_KEY=''

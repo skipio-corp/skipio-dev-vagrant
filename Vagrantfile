@@ -23,8 +23,9 @@ Vagrant.configure("2") do |conf|
     # within the machine from a port on the host machine. In the example below,
     # accessing "localhost:8080" will access port 80 on the guest machine.
     # NOTE: This will enable public access to the opened port
-    config.vm.network "forwarded_port", guest: 3030, host: 3000
-    #onfig.vm.network "forwarded_port", guest: 5000, host: 5050
+    config.vm.network "forwarded_port", guest: 3000, host: 3000
+    #config.vm.network "forwarded_port", guest: 5000, host: 5050
+    config.vm.network "forwarded_port", guest: 5432, host: 5434
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -37,6 +38,7 @@ Vagrant.configure("2") do |conf|
     #config.vm.synced_folder "../skipio", "/home/skipio/skipio", create: true, type: "rsync",
     #  rsync__args: ["--rsync-path='sudo rsync'"]
     config.vm.synced_folder "../skipio", "/home/vagrant/skipio", create: true
+    #config.vm.synced_folder "../"
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
@@ -44,7 +46,7 @@ Vagrant.configure("2") do |conf|
     #
     config.vm.provider "virtualbox" do |vb|
       vb.cpus = 1
-      vb.memory = "1024"
+      vb.memory = "2048"
     end
 
     #

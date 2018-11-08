@@ -1,5 +1,5 @@
 [Unit]
-Description=Skipio Development Server
+Description=Startup the clockwork process
 Requires=network.target
 
 [Service]
@@ -7,7 +7,7 @@ Type=simple
 User=vagrant
 
 WorkingDirectory=/home/vagrant/skipio
-ExecStart=bundle exec rails server -p 3000 -b 192.168.30.30
+ExecStart=bundle exec clockwork /home/vagrant/skipio/config/clock.rb
 
 [Install]
 WantedBy=multi-user.target
