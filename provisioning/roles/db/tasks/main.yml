@@ -40,7 +40,7 @@
     db: skipio
     name: vagrant
     password: 'skipiodevon3'
-    role_attr_flags: "SUPERUSER,CONNECT,CREATEROLE,CREATEDB,INHERIT,LOGIN"
+    role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"
 
 - name: create database
   become: true
@@ -56,4 +56,4 @@
     db: skipio_development
     name: vagrant
     password: 'skipiodevon3'
-    role_attr_flags: "SUPERUSER,CONNECT,CREATEROLE,CREATEDB,INHERIT,LOGIN"
+    role_attr_flags: "SUPERUSER,CREATEROLE,CREATEDB,INHERIT,LOGIN"

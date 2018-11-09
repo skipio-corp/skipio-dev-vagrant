@@ -5,9 +5,8 @@ Requires=network.target
 [Service]
 Type=simple
 User=vagrant
-
 WorkingDirectory=/home/vagrant/skipio
-ExecStart=bundle exec clockwork /home/vagrant/skipio/config/clock.rb
+ExecStart=/bin/bash -lc "/home/vagrant/.rbenv/shims/clockwork /home/vagrant/skipio/config/clock.rb"
 
 [Install]
 WantedBy=multi-user.target

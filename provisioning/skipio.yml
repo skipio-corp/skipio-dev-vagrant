@@ -9,7 +9,7 @@
     ngrok_file: ngrok-stable-linux-amd64.zip
     nvm_dest: /home/vagrant/.nvm
     nvm_version: v0.4.0
-    nvm_node_version: '11.1.0'
+    nvm_node_version: '8.10.0'
 
   roles:
     - db
@@ -98,9 +98,8 @@
       become_user: vagrant
       shell: |
         bash -lc 'gem install bundler'
-  
-# Install Nodejs
 
+    # Install nvm
     - name: Setup NVM install
       file:
         path: /home/vagrant/.nvm
@@ -109,25 +108,14 @@
         mode: 0755
         recurse: yes
         state: directory
-
-    # - name: NVM install
-    #   become: true
-    #   become_user: vagrant
-    #   git: repo=https://github.com/creationix/nvm.git dest=~/.nvm force=yes
-
+    
     - name: NVM install
       become: true
       become_user: vagrant
       get_url:
         dest: /home/vagrant/.nvm
         url: https://raw.githubusercontent.com/creationix/nvm/v0.33.11/nvm.sh
-
-    # - name: NVM - ensure .bashrc is there
-    #   copy:
-    #     content: ""
-    #     dest: "/home/vagrant/.bashrc"
-    #     force: no
-
+    
     - name: Add nvm to .bashrc
       lineinfile: dest="/home/vagrant/.bashrc" line="source ~/.nvm/nvm.sh"
 
@@ -137,60 +125,19 @@
     - name: install node
       become: true
       become_user: vagrant
-      shell: bash -lc "nvm install 8.10.0"
+      shell: |
+        bash -lc "nvm install {{nvm_node_version}}"
       args:
-        executable: /bin/bash
         chdir: /home/vagrant
+        executable: /bin/bash
 
-    # - name: Source nvm in ~/.bashrc
-    #   become: true
-    #   become_user: vagrant
-    #   lineinfile: dest="/home/vagrant/.bashrc" line="source ~/.nvm/nvm.sh"
-
-    # - name: Install node
-    #   become: true
-    #   become_user: vagrant
-    #   shell: source ~/.nvm/nvm.sh && nvm install node
-    #   args:
-    #     executable: /bin/bash
-
-    # - name: NVM | node | set default Node version {{ nvm_node_version }} to be used in new shell
-    #   become: true
-    #   become_user: vagrant
-    #   shell: "source {{nvm_dest}}/nvm.sh && nvm alias default && nvm use node"
-    #   args:
-    #     executable: /bin/bash
-
-    # - name: NVM | pkgs | install npm module(s)
-    #   shell: "source {{ nvm_dest }}/nvm.sh && nvm use node"
-    #   with_items: [npm, yarn]
-    #   args:
-    #     executable: /bin/bash
-    #     creates: "{{nvm_dest}}/versions/node/v{{nvm_node_version}}/lib/node_modules/{{item}}"
-  
     # Install Yarn
     - name: install yarn
       become: true
       become_user: vagrant
-      shell: bbash -lc "npm i -g yarn"
+      shell: bash -lc "npm i -g yarn"
       args:
         executable: /bin/bash
-
-    # - name: symlink yarn
-    #   file:
-    #     src: "/home/vagrant/.nvm/versions/node/v{{nvm_node_version}}/bin/{{ item }}"
-    #     dest: "/usr/local/bin/{{ item }}"
-    #     state: link
-    #   with_items:
-    #     - yarn
-
-    # - name: symlink node
-    #   file:
-    #     src: "/home/vagrant/.nvm/versions/node/v{{nvm_node_version}}/bin/{{ item }}"
-    #     dest: "/usr/bin/{{ item }}"
-    #     state: link
-    #   with_items:
-    #     - node
 
     - name: install ssh identity files
       copy:
@@ -212,15 +159,6 @@
         line: |
           github.com,192.30.252.123 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 
-     # Enable if you would rather load the repo inside the VM
-     # WARNING - If this is done in a non-shared/non-mounted folder and the VM is destroyed then the data is lost
-#    - name: clone skipio repo
-#      become: true
-#      become_user: skipio
-#      shell: "git clone --depth 1 -b {{skipio_branch}} git@github.com:skipio-corp/skipio.git $home/vagrant"
-#      args:
-#        creates: "/home/vagrant/skipio"
-
     # Heroku CLI
     - name: Install Heroku cli
       become: true
@@ -232,9 +170,10 @@
     - name: install gems
       become: true
       become_user: vagrant
-      shell: "bash -lc 'bundle'"
+      shell: bundle install
       args:
         chdir: "/home/vagrant/skipio"
+        executable: /bin/bash
 
     - name: install set skipio env script
       become: true
@@ -302,7 +241,7 @@
     - name: setup db
       become: true
       become_user: vagrant
-      shell: bash -lc "source {{ nvm_dest }}/nvm.sh && RAILS_ENV=development DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:reset"
+      shell: bash -lc "RAILS_ENV=development DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:reset"
       args:
         executable: /bin/bash
         chdir: /home/vagrant/skipio/
@@ -318,21 +257,21 @@
     - name: install javascript modules
       become: true
       become_user: vagrant
-      shell: bash -lc "yarn install --ignore-engines"
+      shell: yarn install
       args:
         executable: /bin/bash
         chdir: /home/vagrant/skipio/
 
-    # DISABLED for dev
     - name: build assets
       become: true
       become_user: vagrant
       shell: |
         bash -lc "bundle exec rails assets:precompile"
       args:
-        chdir: /home/vagrant/skipio/
+        chdir: /home/vagrant/skipio
+        executable: /bin/bash
 
-      - name: install sidekiq, clockwork, webpack, and Skipio web system service files
+    - name: install sidekiq, clockwork, webpack, and Skipio web system service files
       copy:
         src: "files/{{item}}"
         dest: "/etc/systemd/system/{{item}}"
@@ -344,37 +283,23 @@
         - skipio-web.service
         #- skipio-ngrok.con
 
-    # DISABLED for troubleshooting
-    #- name: clone skipio graphql repo
-    #  become: true
-    #  become_user: skipio
-    #  shell: "git clone git@github.com:skipio-corp/skipio-graphql.git /home/vagrant/skipio-graphql"
-    #  args:
-    #    creates: "/home/vagrant/skipio-graphql"
+    - name: install graphql javascript modules
+      become: true
+      become_user: vagrant
+      shell: bash -lc "yarn install"
+      args:
+        chdir: "/home/vagrant/skipio-graphql"
+        executable: /bin/bash
 
-    #- name: install graphql javascript modules
-    #  become: true
-    #  become_user: skipio
-    #  shell: bash -lc "yarn install"
-    #  args:
-    #    chdir: "/home/vagrant/skipio-graphql"
+    - name: install graphql dot env file
+      become: true
+      become_user: vagrant
+      copy:
+        src: files/_env_graphql
+        dest: /home/vagrant/skipio-graphql/.env
+        owner: vagrant
+        group: vagrant
+        mode: "0600"
 
-    #- name: install graphql dot env file
-    #  copy:
-    #    src: files/_env_graphql
-    #    dest: /home/vagrant/skipio-graphql/.env
-    #    owner: skipio
-    #    group: skipio
-    #    mode: "0600"
-
-    # DISABLE?
-    #- name: install skipio graphql service
-    #  copy:
-    #    src: files/skipio-graphql.service
-    #    dest: /etc/systemd/system/skipio-graphql.service
-    #    owner: root
-    #    group: root
-    #    mode: "0600"
-
-    #- name: enable skipio graphql service
-    #  shell: systemctl enable skipio-graphql && systemctl start skipio-graphql
+    - name: enable skipio graphql service
+      shell: systemctl enable skipio-graphql && systemctl enable skipio-sidekiq && systemctl enable skipio-sidekiq

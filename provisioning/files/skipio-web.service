@@ -5,9 +5,8 @@ Requires=network.target
 [Service]
 Type=simple
 User=vagrant
-
 WorkingDirectory=/home/vagrant/skipio
-ExecStart=bundle exec rails server -p 3000 -b 192.168.30.30
+ExecStart=/bin/bash -lc "/home/vagrant/.rbenv/shims/bundle exec rails server -p 3000 -b 192.168.30.30"
 
 [Install]
 WantedBy=multi-user.target
