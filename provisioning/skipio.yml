@@ -7,7 +7,9 @@
   vars:
     skipio_branch: jon-skipiodev
     ngrok_file: ngrok-stable-linux-amd64.zip
-    ngrok_token: 3r6YEZLuLXeirdUcNp2yd_2KnPAaRZSSz3bbSVcaVoM
+    nvm_dest: /home/vagrant/.nvm
+    nvm_version: v0.4.0
+    nvm_node_version: '8.10.0'
 
   roles:
     - db
@@ -24,13 +26,16 @@
           redis-server,
           memcached,
           git,
+          curl,
           tmux,
           libssl-dev,
           libreadline-dev,
           zlib1g-dev,
           libxml2-dev,
           libcurl3,
-          unzip
+          unzip,
+          wget,
+          upstart
         ]
 
     - name: remove useless packages from the cache
@@ -40,21 +45,6 @@
     - name: remove dependencies that are no longer required
       apt:
         autoremove: true
-
-    # # Ensure that the skipio dir has proper ownership
-    # - name: Set home dir ownership
-    #   become: true
-    #   become_user: root
-    #   file:
-    #     path: /home/vagrant/
-    #     owner: vagrant
-    #     group: vagrant
-    #     mode: 0775
-    #     recurse: yes
-
-    # Ensure that the skipio dir has proper ownership - redundant change later
-    # - name: Set skipio dir ownership
-    #   shell: "sudo chown -R vagrant:vagrant /home/vagrant/skipio/"
 
     - name: install rbenv
       become: true
@@ -126,19 +116,8 @@
         dest: /home/vagrant/.nvm
         url: https://raw.githubusercontent.com/creationix/nvm/v0.33.11/nvm.sh
     
-    - name: NVM - ensure .bashrc is there
-      become: true
-      become_user: vagrant
-      copy:
-        content: ""
-        dest: "/home/vagrant/.bashrc"
-        force: no
-    
     - name: Add nvm to .bashrc
       lineinfile: dest="/home/vagrant/.bashrc" line="source ~/.nvm/nvm.sh"
-    
-    - name: Add nvm to .profile
-      lineinfile: dest="/home/vagrant/.profile" line="source ~/.nvm/nvm.sh"
 
     - name: Add nvm to .bash_profile
       lineinfile: dest="/home/vagrant/.bash_profile" line="source ~/.nvm/nvm.sh"
@@ -147,32 +126,23 @@
       become: true
       become_user: vagrant
       shell: |
-        bash -lc "nvm install 8.10.0"
+        bash -lc "nvm install {{nvm_node_version}}"
       args:
         chdir: /home/vagrant
-        executable: /bin/bash
-
-    - name: install pm2
-      become: true
-      become_user: vagrant
-      shell: |
-         bash -lc "npm i -g pm2"
-      args:
         executable: /bin/bash
 
     # Install Yarn
     - name: install yarn
       become: true
       become_user: vagrant
-      shell: |
-         bash -lc "npm i -g yarn"
+      shell: bash -lc "npm i -g yarn"
       args:
         executable: /bin/bash
 
     - name: install ssh identity files
       copy:
-        #owner: skipio
-        #group: skipio
+        owner: vagrant
+        group: vagrant
         src: "{{ item }}"
         dest: /home/vagrant/.ssh/
         mode: "0600"
@@ -181,27 +151,17 @@
 
     - name: "install ssh known_hosts"
       lineinfile:
-        #owner: skipio
-        #group: skipio
+        owner: vagrant
+        group: vagrant
         create: true
         mode: "0600"
         dest: "/home/vagrant/.ssh/known_hosts"
         line: |
           github.com,192.30.252.123 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
 
-     # Enable if you would rather load the repo inside the VM
-     # WARNING - If this is done in a non-shared/non-mounted folder and the VM is destroyed then the data is lost
-#    - name: clone skipio repo
-#      become: true
-#      become_user: skipio
-#      shell: "git clone --depth 1 -b {{skipio_branch}} git@github.com:skipio-corp/skipio.git $home/vagrant"
-#      args:
-#        creates: "/home/vagrant/skipio"
-
     # Heroku CLI
     - name: Install Heroku cli
       become: true
-      #become_user: root
       shell: "curl https://cli-assets.heroku.com/install.sh | sh"
       args:
         chdir: "/home/vagrant/skipio"
@@ -210,7 +170,7 @@
     - name: install gems
       become: true
       become_user: vagrant
-      shell: "bash -lc 'bundle'"
+      shell: bundle install
       args:
         chdir: "/home/vagrant/skipio"
         executable: /bin/bash
@@ -242,22 +202,20 @@
         path: /home/vagrant/.bash_profile
         line: export $(cat .env | xargs)
 
-    #- name: install ngrok bin
-    #  become: true
-    #  become_user: vagrant
-    #  copy:
-    #    src: "files/{{ngrok_file}}"
-    #    dest: "/home/vagrant/{{ngrok_file}}"
-    #    owner: vagrant
-    #    group: vagrant
-    #    mode: "0755"
+    - name: Add bashrc source from bash_profile
+      become: true
+      become_user: vagrant
+      lineinfile:
+        path: /home/vagrant/.bash_profile
+        line: source ~/.bashrc
 
-    #- name: Unzip ngrok
-    #  become: true
-    #  become_user: vagrant
-    #  shell: unzip {{ngrok_file}} && rm {{ngrok_file}} && ./ngrok authtoken {{ngrok_token}}
-    #  args:
-    #    chdir: /home/vagrant/
+    - name: install ngrok bin
+      become: true
+      become_user: vagrant
+      shell: wget https://bin.equinox.io/c/4VmDzA7iaHb/{{ngrok_file}} && unzip -o {{ngrok_file}} && rm {{ngrok_file}} 
+      args:
+        chdir: /home/vagrant/
+      ignore_errors: yes
 
     # Don't know where to get this file
     #- name: install symmetric encryption config
@@ -274,7 +232,7 @@
         dest: "/home/vagrant/skipio/config/{{item}}"
         owner: vagrant
         group: vagrant
-        mode: "0600"
+        mode: "0640"
       with_items:
         - database.yml
         #- site.key
@@ -285,7 +243,8 @@
       become_user: vagrant
       shell: bash -lc "RAILS_ENV=development DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:reset"
       args:
-        chdir: /home/vagrant/skipio
+        executable: /bin/bash
+        chdir: /home/vagrant/skipio/
 
     - name: create skipio user
       become: true
@@ -300,10 +259,9 @@
       become_user: vagrant
       shell: yarn install
       args:
-        chdir: /home/vagrant/skipio
         executable: /bin/bash
+        chdir: /home/vagrant/skipio/
 
-    # DISABLED for dev
     - name: build assets
       become: true
       become_user: vagrant
@@ -313,33 +271,17 @@
         chdir: /home/vagrant/skipio
         executable: /bin/bash
 
-    #- name: install ngrok
-      #copy:
-      #  src: files/skipio-web.service
-      #  dest: /etc/systemd/system/skipio-web.service
-      #  owner: root
-      #  group: root
-      #  mode: "0600"
-
-     # DISABLED for dev
-#    - name: install skipio web service
-#      copy:
-#        src: files/skipio-web.service
-#        dest: /etc/systemd/system/skipio-web.service
-#        owner: root
-#        group: root
-#        mode: "0600"
-
-#    - name: enable skipio web service
-#      shell: systemctl enable skipio-web && systemctl start skipio-web
-
-    # DISABLED for troubleshooting
-    #- name: clone skipio graphql repo
-    #  become: true
-    #  become_user: skipio
-    #  shell: "git clone git@github.com:skipio-corp/skipio-graphql.git /home/vagrant/skipio-graphql"
-    #  args:
-    #    creates: "/home/vagrant/skipio-graphql"
+    - name: install sidekiq, clockwork, webpack, and Skipio web system service files
+      copy:
+        src: "files/{{item}}"
+        dest: "/etc/systemd/system/{{item}}"
+        mode: "0644"
+      with_items:
+        - skipio-sidekiq.service
+        - skipio-clockwork.service
+        - skipio-webpack.service
+        - skipio-web.service
+        #- skipio-ngrok.con
 
     - name: install graphql javascript modules
       become: true
@@ -355,18 +297,9 @@
       copy:
         src: files/_env_graphql
         dest: /home/vagrant/skipio-graphql/.env
-        owner: skipio
-        group: skipio
+        owner: vagrant
+        group: vagrant
         mode: "0600"
 
-    # DISABLE?
-    #- name: install skipio graphql service
-    #  copy:
-    #    src: files/skipio-graphql.service
-    #    dest: /etc/systemd/system/skipio-graphql.service
-    #    owner: root
-    #    group: root
-    #    mode: "0600"
-
-    #- name: enable skipio graphql service
-    #  shell: systemctl enable skipio-graphql && systemctl start skipio-graphql
+    - name: enable skipio graphql service
+      shell: systemctl enable skipio-graphql && systemctl enable skipio-sidekiq && systemctl enable skipio-sidekiq

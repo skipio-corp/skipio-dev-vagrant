@@ -1,12 +1,13 @@
 [Unit]
-Description=Skipio Development Server
+Description=webpack dev server instance
 Requires=network.target
 
 [Service]
 Type=simple
 User=vagrant
+
 WorkingDirectory=/home/vagrant/skipio
-ExecStart=/bin/bash -lc "/home/vagrant/.rbenv/shims/bundle exec rails server -p 3000 -b 192.168.30.30"
+ExecStart=/home/vagrant/skipio/bin/webpack-dev-server --public 192.168.30.30:8080 --watch-poll
 
 [Install]
 WantedBy=multi-user.target

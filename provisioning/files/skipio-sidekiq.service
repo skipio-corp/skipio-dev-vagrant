@@ -1,0 +1,12 @@
+[Unit]
+Description=sidekiq job queue instance
+Requires=network.target
+
+[Service]
+Type=simple
+User=vagrant
+WorkingDirectory=/home/vagrant/skipio
+ExecStart=/bin/bash -lc "/home/vagrant/.rbenv/shims/sidekiq -v -C /home/vagrant/skipio/config/sidekiq.yml"
+
+[Install]
+WantedBy=multi-user.target

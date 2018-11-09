@@ -26,7 +26,7 @@ Vagrant.configure("2") do |conf|
     config.vm.network "forwarded_port", guest: 3000, host: 3000
     config.vm.network "forwarded_port", guest: 5432, host: 5432
     config.vm.network "forwarded_port", guest: 8080, host: 8080
-    #onfig.vm.network "forwarded_port", guest: 5000, host: 5050
+    #config.vm.network "forwarded_port", guest: 5000, host: 5050
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -36,8 +36,6 @@ Vagrant.configure("2") do |conf|
     # the path on the host to the actual folder. The second argument is
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
-    #config.vm.synced_folder "../skipio", "/home/skipio/skipio", create: true, type: "rsync",
-    #  rsync__args: ["--rsync-path='sudo rsync'"]
     config.vm.synced_folder "../skipio", "/home/vagrant/skipio", create: true
     config.vm.synced_folder "../skipio-graphql", "/home/vagrant/skipio-graphql", create: true
 
@@ -46,8 +44,8 @@ Vagrant.configure("2") do |conf|
     # Example for VirtualBox:
     #
     config.vm.provider "virtualbox" do |vb|
-      vb.cpus = 4
-      vb.memory = "8192"
+      vb.cpus = 1
+      vb.memory = "2048"
     end
 
     #
