@@ -281,7 +281,7 @@
         - skipio-clockwork.service
         - skipio-webpack.service
         - skipio-web.service
-        #- skipio-ngrok.con
+        #- skipio-ngrok.service
 
     - name: install graphql javascript modules
       become: true

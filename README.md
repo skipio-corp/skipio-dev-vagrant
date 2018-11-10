@@ -9,6 +9,11 @@ Download and install VirtualBox and Vagrant for your OS:
 ## Download, Build, and Setup
 This vagrant config runs a minimized version of Ubuntu 16.04 (Xenial) and utilizes [Ansible](https://www.ansible.com/resources/get-started) to auto provision nearly all of the dependencies and configuration prerequisites for running the Skipio stack.
 
+### 0 - Setup vagrant plugins
+Install intoify-forwarder to enable the ability to sync files when using webpack dev server:
+```
+vagrant plugin install vagrant-notify-forwarder
+```
 
 ### 0 - Setup Skipio repo
 Clone the Skipio repo from git:
