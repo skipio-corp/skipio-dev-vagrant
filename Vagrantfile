@@ -26,6 +26,7 @@ Vagrant.configure("2") do |conf|
     config.vm.network "forwarded_port", guest: 3000, host: 3000
     config.vm.network "forwarded_port", guest: 5432, host: 5432
     config.vm.network "forwarded_port", guest: 8080, host: 8080
+    config.vm.network "forwarded_port", guest: 29324, host: 29324
     #config.vm.network "forwarded_port", guest: 5000, host: 5050
 
     # Create a private network, which allows host-only access to the machine
@@ -44,8 +45,8 @@ Vagrant.configure("2") do |conf|
     # Example for VirtualBox:
     #
     config.vm.provider "virtualbox" do |vb|
-      vb.cpus = 1
-      vb.memory = "2048"
+      vb.cpus = 4
+      vb.memory = "3072"
     end
 
     #
